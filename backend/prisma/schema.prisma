@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./pos.db"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("cashier")
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  sales     Sale[]
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  products Product[]
+}
+
+model Product {
+  id         Int        @id @default(autoincrement())
+  name       String
+  barcode    String?    @unique
+  price      Float
+  cost       Float      @default(0)
+  stock      Int        @default(0)
+  minStock   Int        @default(5)
+  unit       String     @default("unidad")
+  active     Boolean    @default(true)
+  categoryId Int?
+  category   Category?  @relation(fields: [categoryId], references: [id])
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  saleItems  SaleItem[]
+}
+
+model Sale {
+  id         Int        @id @default(autoincrement())
+  total      Float
+  subtotal   Float
+  tax        Float      @default(0)
+  discount   Float      @default(0)
+  payment    String     @default("cash")
+  status     String     @default("completed")
+  userId     Int
+  user       User       @relation(fields: [userId], references: [id])
+  items      SaleItem[]
+  createdAt  DateTime   @default(now())
+}
+
+model SaleItem {
+  id        Int     @id @default(autoincrement())
+  quantity  Int
+  price     Float
+  total     Float
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+  saleId    Int
+  sale      Sale    @relation(fields: [saleId], references: [id])
+}
